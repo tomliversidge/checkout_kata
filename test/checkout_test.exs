@@ -11,7 +11,6 @@ defmodule CheckoutTest do
       %{sku: :B, price: 30.00, quantity: 1},
       %{sku: :C, price: 20.00, quantity: 1},
     ]
-
     {:ok, cart: items}
   end
 
