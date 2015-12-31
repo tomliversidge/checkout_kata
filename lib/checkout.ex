@@ -14,12 +14,23 @@ defmodule Checkout do
     calculate_discount(cart, :A, 3, 20.00) + calculate_discount(cart, :B, 2, 15.00)
   end
 
-  defp calculate_discount(cart, identifier, discount_quantity, discount_value) do
-    items = Enum.filter(cart, fn(item) ->
-      item.sku == identifier
-    end)
-    total_items_count = Enum.reduce(items, 0, fn(item, acc) -> item.quantity + acc end)
-    Float.floor(total_items_count / discount_quantity, 0) * discount_value
+  defp calculate_discount(cart, sku, discount_qualification_amount, discount_value) do
+    cart
+      |> filter_by(sku)
+      |> count
+      |> calculate_discount(discount_qualification_amount, discount_value)
+  end
+
+  defp filter_by(cart, sku) do
+    Enum.filter(cart, &(&1.sku == sku))
+  end
+
+  defp count(items) do
+    Enum.reduce(items, 0, fn(item, total) -> item.quantity + total end)
+  end
+
+  defp calculate_discount(items_count, discount_qualification_amount, discount_value) do
+    Float.floor(items_count / discount_qualification_amount, 0) * discount_value
   end
 
   def subtotal(cart) do
