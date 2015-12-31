@@ -5,20 +5,19 @@ defmodule Checkout do
   def scan(items) when is_list(items), do: Enum.reduce(items, [], &(scan(&1, &2)))
   def scan(item, order) when is_list(order), do: [item | order]
 
-  def total(cart) do
-    subtotal(cart) - discount(cart)
+  def total(cart, offers) do
+    subtotal(cart) - discount(cart, offers)
   end
 
-  def discount(cart) do
-    #calculate the discount
-    calculate_discount(cart, :A, 3, 20.00) + calculate_discount(cart, :B, 2, 15.00)
+  def discount(cart, offers) do
+    Enum.reduce(offers, 0, fn(offer, total) -> calculate_discount(cart, offer) + total end)
   end
 
-  defp calculate_discount(cart, sku, discount_qualification_amount, discount_value) do
+  defp calculate_discount(cart, offer) do
     cart
-      |> filter_by(sku)
+      |> filter_by(offer.sku)
       |> count
-      |> calculate_discount(discount_qualification_amount, discount_value)
+      |> calculate_discount(offer.discount_qualification_quantity, offer.discount)
   end
 
   defp filter_by(cart, sku) do
@@ -29,8 +28,8 @@ defmodule Checkout do
     Enum.reduce(items, 0, fn(item, total) -> item.quantity + total end)
   end
 
-  defp calculate_discount(items_count, discount_qualification_amount, discount_value) do
-    Float.floor(items_count / discount_qualification_amount, 0) * discount_value
+  defp calculate_discount(items_count, discount_qualification_quantity, discount_value) do
+    Float.floor(items_count / discount_qualification_quantity, 0) * discount_value
   end
 
   def subtotal(cart) do
